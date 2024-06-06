@@ -1,0 +1,208 @@
+@Metadata.layer: #CORE
+//@UI: { 
+//        headerInfo: 
+//        { 
+//            typeName: 'NotificationSet',
+//            typeNamePlural: 'NotificationSet',
+//            typeImageUrl: 'sap-icon;//wrench'        
+//        }
+//     }
+annotate view ZR_NOTIFICATION_KTP with 
+{
+  @UI.facet: [{ 
+    type: #IDENTIFICATION_REFERENCE,
+    label: 'Notification',
+    purpose: #STANDARD
+  }]
+  
+  @UI.lineItem: [ {
+    position: 10,
+    importance: #HIGH
+  } ]
+  @UI.identification: [ {
+    position: 10,
+    importance: #HIGH
+  } ]      
+  @UI.selectionField: [ { 
+    position: 10
+  } ]
+  Notification;
+    
+//  @UI.lineItem: [ {
+//    position: 20,
+//    importance: #HIGH
+//  } ]
+//  @UI.identification: [ {
+//    position: 20,
+//    importance: #HIGH
+//  } ]        
+//    Priority;
+    
+//  @UI.lineItem: [ {
+//    position: 30,
+//    importance: #HIGH
+//  } ]
+//  @UI.identification: [ {
+//    position: 20,
+//    importance: #HIGH
+//  } ]        
+//    Priority_Type;
+    
+  @UI.lineItem: [ {
+    position: 40,
+    importance: #HIGH
+  } ]
+  @UI.identification: [ {
+    position: 30,
+    importance: #HIGH
+  } ]
+  @UI.selectionField: [ { 
+    position: 30
+  } ]        
+    Notification_Type;
+    
+//  @UI.lineItem: [ {
+//    position: 50,
+//    importance: #HIGH
+//  } ]
+//  @UI.identification: [ {
+//    position: 30,
+//    importance: #HIGH
+//  } ]        
+//    Processing_Phase;
+    
+  @UI.lineItem: [ {
+    position: 50,
+    importance: #HIGH
+  } ]
+  @UI.identification: [ {
+    position: 60,
+    importance: #HIGH
+  } ]
+  @UI.selectionField: [ { 
+    position: 20
+  } ]
+    CreatedBy;
+    
+  @UI.lineItem: [ {
+    position: 60,
+    importance: #HIGH
+  } ]
+//  @UI.identification: [ {
+//    position: 70
+//  } ]        
+    Last_Changed;
+//    Reported_By;
+  @UI.lineItem: [ {
+    position: 70,
+    importance: #HIGH
+  } ]
+//  @UI.identification: [ {
+//    position: 80
+//  } ]  
+    Creation_Date;
+//    Last_Change_Time;
+//    Last_Change_Date;
+  @UI.lineItem: [ {
+    position: 80,
+    importance: #HIGH
+  } ]
+//  @UI.identification: [ {
+//    position: 90
+//  } ]  
+   Creation_Time;
+//    Creation_Date_Time;
+  @UI.lineItem: [ {
+    position: 90,
+    importance: #HIGH
+  } ]
+  @UI.identification: [ {
+    position: 50,
+    importance: #HIGH
+  } ] 
+    Notification_Text;
+  @UI.lineItem: [ {
+    position: 100,
+    importance: #HIGH
+  } ]
+//  @UI.identification: [ {
+//    position: 60,
+//    label: 'Language',
+//    importance: #HIGH
+//  } ] 
+    Completed;
+  @UI.lineItem: [ {
+    position: 110,
+    importance: #HIGH
+  } ]
+    CompletionDate;
+  @UI.lineItem: [ {
+    position: 120,
+    importance: #HIGH
+  } ]
+    CompletionTime;
+//    Long_Text_Language;
+//    Maintenance_Order;
+//    Required_StartDate;
+//    Required_StartTime;
+//    Required_EndDate;
+//    Required_EndTime;
+//    CreationDate;
+//    CreationTime;
+//    ReferenceDate;
+//    HasLongText;
+//    NotifInternalID;
+//    Notification_Time_Zone;
+//    ReferenceTime;
+//    CenterInternalID;
+//    CenterTypeCode;
+//    WorkCenterPlant;
+//    Notification_Catalog;
+//  @UI.lineItem: [ {
+//    position: 110,
+//    importance: #HIGH
+//  } ]
+//  @UI.identification: [ {
+//    position: 110,
+//    importance: #HIGH
+//  } ] 
+//    Code;
+    
+//  @UI.lineItem: [ {
+//    position: 120,
+//    importance: #HIGH
+//  } ]
+//  @UI.identification: [ {
+//    position: 120,
+//    importance: #HIGH
+//  } ] 
+//    CodeGroup;
+//    Catalog_Profile;
+//  @UI.lineItem: [ {
+//    position: 130,
+//    importance: #HIGH
+//  } ]
+//  @UI.identification: [ {
+//    position: 130,
+//    importance: #HIGH
+//  } ] 
+//    Origin;
+//    Deleted;
+//    Last_Change_Date_Time;
+//    Serial_Number;
+//    Material;
+//    Additional_Device_Data;
+//    Reference_Number;
+  @UI.lineItem: [ {
+    position: 100,
+    label: 'Language',
+    importance: #HIGH
+  } ]
+//  @UI.identification: [ {
+//    position: 60,
+//    label: 'Language',
+//    importance: #HIGH
+//  } ] 
+    Language;
+//    DfsMaintNotificationObjectNmbr;
+}
