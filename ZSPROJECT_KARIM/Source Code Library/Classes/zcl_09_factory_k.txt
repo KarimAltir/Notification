@@ -1,0 +1,76 @@
+CLASS zcl_09_factory_k DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+    INTERFACES if_oo_adt_classrun .
+       DATA is_notification TYPE ZR_NOTIFICATION_KTP.
+  METHODS testing.
+
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS zcl_09_factory_k IMPLEMENTATION.
+
+  METHOD testing.
+
+  ENDMETHOD.
+  METHOD if_oo_adt_classrun~main.
+ DATA: ls_notifheader TYPE bapi2080_nothdri,
+          lt_return TYPE TABLE OF bapiret2,
+          lt_notitem TYPE TABLE OF bapi2080_notitemi,
+          lv_notif_type TYPE qmart,
+          lv_notification_key TYPE qmnum, " Add this variable
+          lt_number TYPE qmnum.
+
+          DATA:ls_new_notification_header type bapi2080_nothdre.
+*    TRY.
+        CALL FUNCTION 'BAPI_ALM_NOTIF_CREATE'
+          EXPORTING
+            notifheader = ls_notifheader
+            notif_type = lv_notif_type
+          IMPORTING
+            notifheader_export = ls_new_notification_header
+          TABLES
+            notitem = lt_notitem
+            return = lt_return.
+
+            lt_number = ls_new_notification_header-notif_no.
+
+        IF lt_return IS INITIAL.
+            out->write( |Notification created successfully.| ).
+                " Save the notification data
+                CALL FUNCTION 'BAPI_ALM_NOTIF_SAVE'
+                  EXPORTING
+                    number = lt_number
+                  IMPORTING
+                    notifheader = ls_new_notification_header
+                  TABLES
+                    return = lt_return.
+
+                " Store the notification key
+                lv_notification_key = ls_new_notification_header-notif_no.
+                out->write( | Notification key: { lv_notification_key }| ).
+
+                out->write( | Data from save_modified for Notification: { is_notification-Notification }| ).
+                out->write( | Data from save_modified for priority: { is_notification-priority }| ).
+                out->write( | Data from save_modified for Priority_Type: { is_notification-Priority_Type }| ).
+                out->write( | Data from save_modified for Notification_Type: { is_notification-Notification_Type }| ).
+                out->write( | Data from save_modified for Processing_Phase: { is_notification-Processing_Phase }| ).
+
+
+        ELSE.
+            LOOP AT lt_return INTO DATA(ls_message).
+                IF ls_message-type = 'E' OR ls_message-type = 'A'.
+                    " Handle error or abort message
+                    out->write( | Error type: { ls_message-type }, Error: { ls_message-message }.| ).
+                ENDIF.
+            ENDLOOP.
+        ENDIF.
+*    ENDTRY.
+  ENDMETHOD.
+ENDCLASS.
