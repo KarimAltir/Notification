@@ -1,0 +1,169 @@
+CLASS lhc_zr_i_notification DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+
+    METHODS get_global_authorizations FOR GLOBAL AUTHORIZATION
+      IMPORTING REQUEST requested_authorizations FOR Notification RESULT result.
+    METHODS checkIsCompleted FOR VALIDATE ON SAVE
+      IMPORTING keys FOR Notification~checkIsCompleted.
+
+
+ENDCLASS.
+
+CLASS lhc_zr_i_notification IMPLEMENTATION.
+
+  METHOD get_global_authorizations.
+  ENDMETHOD.
+
+  METHOD checkIsCompleted.
+    READ ENTITIES OF zr_notification_ktp IN LOCAL MODE
+    ENTITY Notification
+    FIELDS ( Completed ) WITH CORRESPONDING #( keys )
+    RESULT DATA(isCompleted).
+
+*    LOOP AT isCompleted INTO DATA(complete).
+*        IF complete-Completed NE abap_true.
+**            APPEND VALUE #( %tky = isCompleted ) to failed-notification.
+*            APPEND VALUE #( %tky = complete ) to failed-notification.
+*
+*
+*            APPEND VALUE #(
+*            %tky = keys[ 1 ]-%tky
+*            %msg = new_message_with_text(
+*            severity = if_abap_behv_message=>severity-error
+*            text = 'error: the notification is not compeleted'
+*            ) )
+*            TO reported-notification.
+*        ENDIF.
+*    ENDLOOP.
+
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lsc_zr_i_notification DEFINITION INHERITING FROM cl_abap_behavior_saver.
+    PROTECTED SECTION.
+        METHODS adjust_numbers REDEFINITION.
+
+        METHODS save_modified REDEFINITION.
+
+        METHODS cleanup_finalize REDEFINITION.
+ENDCLASS.
+
+CLASS lsc_zr_i_notification IMPLEMENTATION.
+
+
+" adjust numbers will make sure that will shows the result of the data of the notification after creating it.
+
+    METHOD adjust_numbers.
+*      DATA: notification TYPE zr_notification_ktp,
+*            ls_notifheader TYPE bapi2080_nothdri.
+*
+*            data(global_class_notif) = new zcl_notification_call_bapi_k(  ).
+*
+*
+*      notification-Notification = mapped-notification[ 1 ]-Notification.
+*
+*      READ ENTITIES OF zc_notification_ktp
+*          ENTITY Notification
+*          ALL FIELDS WITH CORRESPONDING #( mapped-notification )
+*          RESULT DATA(Notifications2)
+*          FAILED DATA(failed).
+*
+*
+*
+*      LOOP AT Notifications2 INTO DATA(ls_notif).
+*          " Get the maximum notification ID for each notification
+*            SELECT SINGLE MAX( Notification ) as Notifications
+*            FROM zc_notification_ktp
+**            WHERE Notification_Type LIKE 'P%'
+**            AND Notification_Type LIKE 'S%'
+*            WHERE Notification_Type = @ls_notif-Notification_Type
+*            INTO @DATA(lv_max_keys).
+*
+*
+*          " Calculate the next available key
+*          DATA(lv_new_key) = conv char012( lv_max_keys ).
+*
+**          " Update the Notification value immediately
+**          ls_notif-Notification = lv_new_key.
+*
+*          LOOP AT mapped-notification REFERENCE INTO DATA(map) WHERE Notification = ls_notif-Notification.
+*
+*            map->Notification = |{ lv_new_key alpha = OUT }|.
+*            map->%tmp = map->Notification.
+*
+*            " Map the preliminary key to the final key
+*            map->%pre-%pid               = ls_notif-%pid.
+*            map->%pre-%tmp-Notification  = ls_notif-Notification.
+**            lv_max_keys += 1.
+*            map->%key-Notification       = lv_max_keys.
+**            map->%key-Notification       = lv_new_key.
+*
+*          ENDLOOP.
+
+*      ENDLOOP.
+
+    ENDMETHOD.
+
+    METHOD save_modified.
+
+    " ... Populate notification ...
+        DATA: notification TYPE zr_notification_ktp,
+            ls_notifheader TYPE bapi2080_nothdri.
+
+            data(global_class_notif) = new zcl_notification_call_bapi_k(  ).
+    TRY.
+        IF update-notification IS NOT INITIAL.
+
+            " add elements to update the notification
+            notification-Notification = update-notification[ 1 ]-Notification.
+            notification-Notification_Type = update-notification[ 1 ]-Notification_Type.
+            notification-Notification_Text = update-notification[ 1 ]-Notification_Text.
+            ls_notifheader = update-notification[ 1 ]-Notification_Type.
+
+            global_class_notif->update_notif( is_notification_update = notification ).
+
+        ELSE.
+            data(failed_update) = 'failed to update'.
+        ENDIF.
+
+        IF delete-notification IS NOT INITIAL.
+            " add element to delete the notification
+            notification-Notification = delete-notification[ 1 ]-Notification.
+
+            global_class_notif->delete_notif( ls_notifheader_delete = notification ).
+        ELSE.
+            data(failed_delete) = 'failed to delete'.
+        ENDIF.
+
+        IF create-notification IS NOT INITIAL.
+            " add elements to create the notification
+            notification-Notification = create-notification[ 1 ]-Notification.
+            notification-Notification_Type = create-notification[ 1 ]-Notification_Type.
+            notification-Notification_Text = create-notification[ 1 ]-Notification_Text.
+            ls_notifheader = create-notification[ 1 ]-Notification_Type.
+
+            global_class_notif->create_notif( is_notification_create = notification ).
+        ELSE.
+            data(failed_create) = 'failed to create'.
+        ENDIF.
+
+    CATCH CX_SY_ITAB_LINE_NOT_FOUND INTO DATA(line_not_found).
+      " Handle the exception
+        DATA(error_line_not_found) = 'Exeption raised: ' + line_not_found->get_text( ).
+    CATCH CX_SY_DYN_CALL_PARAM_NOT_FOUND INTO DATA(param_not_found).
+      " Handle the exception
+        DATA(error_param_not_found) = 'Exeption raised: ' + param_not_found->get_text( ).
+    CATCH CX_SY_CONVERSION_NO_NUMBER INTO DATA(convrt_no_number).
+      " Handle the exception
+        DATA(error_convrt_no_number) = 'Exeption raised: ' + convrt_no_number->get_text( ).
+    ENDTRY.
+
+    ENDMETHOD.
+
+  METHOD cleanup_finalize.
+  ENDMETHOD.
+
+
+ENDCLASS.
