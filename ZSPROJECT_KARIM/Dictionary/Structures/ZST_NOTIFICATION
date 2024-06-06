@@ -1,0 +1,6 @@
+@EndUserText.label : 'Structure Notification'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+define structure zst_notification {
+  component_to_be_changed : abap.string(0);
+
+}
