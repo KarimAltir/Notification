@@ -1,0 +1,291 @@
+CLASS zcl_notification_call_bapi_k DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+    METHODS create_notif
+        IMPORTING
+            is_notification_create TYPE ZR_NOTIFICATION_KTP.
+
+    METHODS update_notif
+        IMPORTING
+            is_notification_update TYPE ZR_NOTIFICATION_KTP.
+*            ls_notifheader TYPE bapi2080_nothdri.
+
+    METHODS delete_notif
+        IMPORTING
+            ls_notifheader_delete TYPE ZR_NOTIFICATION_KTP.
+
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+CLASS zcl_notification_call_bapi_k IMPLEMENTATION.
+
+
+METHOD create_notif.
+
+        DATA:
+            ls_notifheader TYPE bapi2080_nothdri,
+            lt_return TYPE TABLE OF bapiret2,
+            lt_notitem TYPE TABLE OF bapi2080_notitemi,
+            lv_notif_type TYPE qmart,
+            lv_notification_key TYPE qmnum, " Add this variable
+            lv_number TYPE bapi2080_nothdre-notif_no,
+            lt_number TYPE qmnum.
+
+*    ls_notifheader-notif_date = '20022002'. " Notification types
+    ls_notifheader-short_text = is_notification_create-Notification_Text. " Short text for the notification
+*    ls_notifheader-funct_loc = '1000'. " Functional location
+
+
+    lv_notif_type = is_notification_create-Notification_Type.
+    lv_notification_key = is_notification_create-Notification.
+
+
+    DATA ls_new_notification_header type bapi2080_nothdre.
+        CALL FUNCTION 'BAPI_ALM_NOTIF_CREATE'
+            EXPORTING
+                notifheader = ls_notifheader
+                notif_type = lv_notif_type
+            IMPORTING
+                notifheader_export = ls_new_notification_header
+            TABLES
+                notitem = lt_notitem
+                return = lt_return.
+
+            lt_number = ls_new_notification_header-notif_no.
+
+        IF lt_return IS INITIAL.
+            WRITE: / 'Notification created successfully.'.
+                " Save the notification data
+                CALL FUNCTION 'BAPI_ALM_NOTIF_SAVE'
+                    EXPORTING
+                        number = lt_number
+                    IMPORTING
+                        notifheader = ls_new_notification_header
+                    TABLES
+                        return = lt_return.
+
+                " Store the notification key
+                lv_notification_key = ls_new_notification_header-notif_no.
+                WRITE: / 'Notification key:', lv_notification_key.
+
+        ELSE.
+            LOOP AT lt_return INTO DATA(ls_message).
+                IF ls_message-type = 'E' OR ls_message-type = 'A'.
+                    " Handle error or abort message
+                    WRITE: / 'Error type:', ls_message-type, ', Error:', ls_message-message.
+                ENDIF.
+            ENDLOOP.
+        ENDIF.
+
+  ENDMETHOD.
+
+  METHOD update_notif.
+
+        DATA:
+            ls_notifheader TYPE bapi2080_nothdri,
+            lt_return TYPE TABLE OF bapiret2,
+            lv_notif_type TYPE qmart,
+            lv_notification_key TYPE qmnum, " Add this variable
+            lt_notitem TYPE TABLE OF bapi2080_notitemi,
+            lt_number TYPE qmnum.
+
+        DATA:
+            lt_notifcaus TYPE TABLE OF bapi2080_notcausi,
+            lt_notifactv TYPE TABLE OF bapi2080_notactvi,
+            lt_notiftask TYPE TABLE OF bapi2080_nottaski,
+            ls_nothdtext TYPE bapi2080_nothdtxte,
+            lt_notifpartnr TYPE TABLE OF bapi2080_notpartnri,
+            ls_notifheader_export TYPE bapi2080_nothdre,
+
+            ls_notifheader_x TYPE bapi2080_nothdri_x,
+            lt_notifactv_x TYPE TABLE OF bapi2080_notactvi_x,
+            lt_notiftask_x TYPE TABLE OF bapi2080_nottaski_x,
+            lt_notifpartnr_x TYPE TABLE OF bapi2080_notpartnri_x,
+            lt_notifcaus_x TYPE TABLE OF bapi2080_notcausi_x,
+            lt_notitem_x TYPE TABLE OF bapi2080_notitemi_x.
+
+
+
+
+            ls_notifheader-short_text = is_notification_update-Notification_Text.
+            ls_notifheader-desstdate = sy-datum.
+            ls_notifheader-desenddate = sy-datum.
+            ls_notifheader-dessttime = sy-uzeit.
+            ls_notifheader-desendtm = sy-uzeit.
+
+            ls_notifheader_x-short_text = 'X'.
+            ls_notifheader_x-desstdate = 'X'.
+            ls_notifheader_x-desenddate = 'X'.
+            ls_notifheader_x-dessttime = 'X'.
+            ls_notifheader_x-desendtm = 'X'.
+
+      DATA ls_new_notification_header type bapi2080_nothdre.
+      DATA(lv_number) = is_notification_update-Notification. "s_new_notification_header-notif_no.
+
+          CALL FUNCTION 'BAPI_ALM_NOTIF_DATA_MODIFY'
+            EXPORTING
+                number              = lv_number
+                notifheader         = ls_notifheader
+                notifheader_x       = ls_notifheader_x
+            IMPORTING
+                notifheader_export  = ls_notifheader_export
+            TABLES
+                return              = lt_return.
+
+        READ TABLE lt_return
+        WITH KEY type = 'E'
+        INTO DATA(messages).
+
+        IF messages-type = 'E'.
+            LOOP AT lt_return INTO DATA(ls_message).
+                IF ls_message-type = 'E' OR ls_message-type = 'A'.
+                    " Handle error or abort message
+                    WRITE: / 'Error type:', ls_message-type, ', Error:', ls_message-message.
+                ENDIF.
+            ENDLOOP.
+        ELSE.
+            WRITE: / 'Notification updated successfully.'.
+            " Save the notification data
+            CALL FUNCTION 'BAPI_ALM_NOTIF_SAVE'
+                EXPORTING
+                    number = lv_number
+                IMPORTING
+                    notifheader = ls_notifheader_export
+                TABLES
+                    return = lt_return.
+
+            " Store the notification key
+            lv_notification_key = ls_new_notification_header-notif_no.
+            WRITE: / 'Notification key:', lv_notification_key.
+        ENDIF.
+
+  ENDMETHOD.
+
+  METHOD delete_notif.
+          DATA:
+*            lt_notitem TYPE TABLE OF bapi2080_notitemi,
+*            lt_notitem_x TYPE TABLE OF bapi2080_notitemi_x,
+*            ls_notifheader TYPE bapi2080_nothdri,
+*            ls_notifheader_x TYPE bapi2080_nothdri_x,
+*            lt_notifcaus TYPE TABLE OF bapi2080_notcausi,
+*            lt_notifcaus_x TYPE TABLE OF bapi2080_notcausi_x,
+*            lt_notifactv TYPE TABLE OF bapi2080_notactvi,
+*            lt_notifactv_x TYPE TABLE OF bapi2080_notactvi_x,
+*            lt_notiftask TYPE TABLE OF bapi2080_nottaski,
+*            lt_notiftask_x TYPE TABLE OF bapi2080_nottaski_x,
+*            lt_notifpartnr TYPE TABLE OF bapi2080_notpartnri,
+*            lt_notifpartnr_x TYPE TABLE OF bapi2080_notpartnri_x,
+            lt_return TYPE TABLE OF bapiret2,
+            lt_number TYPE qmnum,
+            lv_buffer_refresh_on_error TYPE bapi_flag,
+*            lv_number TYPE bapi2080_nothdre-notif_no,
+            ls_notification_header type bapi2080_nothdre,
+            ls_notifheader_export TYPE bapi2080_nothdre,
+
+            lv_syststat TYPE bapi2080_notsti,
+            lv_testrun TYPE bapi20783t-status_ind,
+            lv_systemstatus TYPE bapi2080_notadt-systatus,
+            lv_userstatus TYPE bapi2080_notadt-usrstatus,
+
+            lv_notification_key TYPE qmnum,
+            lv_wait TYPE BAPITA-WAIT. " Add this variable
+
+
+        DATA(lv_number) = ls_notifheader_delete-Notification.
+
+        lt_number = ls_notification_header-notif_no.
+*
+*            ls_notifheader-short_text = ls_notifheader_delete-Notification_Text.
+*            ls_notifheader-short_text = ls_notifheader_delete-Notification.
+*            ls_notifheader-short_text = ls_notifheader_delete-Notification_Type.
+*            ls_notifheader-short_text = ls_notifheader_delete-Language.
+*            ls_notifheader-desstdate = sy-datum.
+*            ls_notifheader-desenddate = sy-datum.
+*            ls_notifheader-dessttime = sy-uzeit.
+*            ls_notifheader-desendtm = sy-uzeit.
+
+*            ls_notifheader_x-short_text = 'X'.
+*            ls_notifheader_x-desstdate = 'X'.
+*            ls_notifheader_x-desenddate = 'X'.
+*            ls_notifheader_x-dessttime = 'X'.
+*            ls_notifheader_x-desendtm = 'X'.
+
+*            lt_notitem = ls_notifheader_delete-Notification.
+*            lt_notitem_x = 'X'.
+
+
+*        CALL FUNCTION 'BAPI_ALM_NOTIF_DATA_DELETE'
+*            EXPORTING
+*                number      = lv_number
+**                buffer_refresh_on_error = lv_buffer_refresh_on_error
+*            TABLES
+**                notitem     = lt_notitem
+**                notifcaus   = lt_notifcaus
+**                notifactv   = lt_notifactv
+**                notiftask   = lt_notiftask
+**                notifpartnr = lt_notifpartnr
+*                return      = lt_return.
+
+*        CALL FUNCTION 'ALM_PM_NOTIFICATION_DELETE'
+*            EXPORTING
+*                number      = lv_number
+**                buffer_refresh_on_error = lv_buffer_refresh_on_error
+*            TABLES
+**                notitem     = lt_notitem
+**                notifcaus   = lt_notifcaus
+**                notifactv   = lt_notifactv
+**                notiftask   = lt_notiftask
+**                notifpartnr = lt_notifpartnr
+*                return      = lt_return.
+
+*        CALL FUNCTION 'BAPI_ALM_NOTIF_DATA_MODIFY'
+*            EXPORTING
+*                number              = lv_number
+*                notifheader         = ls_notifheader
+*                notifheader_x       = ls_notifheader_x
+*            IMPORTING
+*                notifheader_export  = ls_notifheader_export
+*            TABLES
+**                notifitem           = lt_notitem
+**                notifitem_x         = lt_notitem_x
+**                notifactv           = lt_notifactv
+**                notifactv_x         = lt_notifactv_x
+**                notifcaus           = lt_notifcaus
+**                notifcaus_x         = lt_notifcaus_x
+**                notifpartnr         = lt_notifpartnr
+**                notifpartnr_x       = lt_notifpartnr_x
+**                notiftask           = lt_notiftask
+**                notiftask_x         = lt_notiftask_x
+*                return              = lt_return.
+
+            " close the notification
+
+        CALL FUNCTION 'BAPI_ALM_NOTIF_CLOSE'
+            EXPORTING
+                number          = lv_number
+                syststat        = lv_syststat
+                testrun         = lv_testrun
+            IMPORTING
+                systemstatus    = lv_systemstatus
+                userstatus      = lv_userstatus
+            TABLES
+                return          = lt_return.
+
+
+        IF lt_return IS NOT INITIAL.
+            WRITE: / 'Notification closed successfully.'.
+        ELSE.
+            LOOP AT lt_return INTO DATA(ls_message).
+                IF ls_message-type = 'E' OR ls_message-type = 'A'.
+                    " Handle error or abort message
+                    WRITE: / 'Error type:', ls_message-type, ', Error:', ls_message-message.
+                ENDIF.
+            ENDLOOP.
+        ENDIF.
+  ENDMETHOD.
+
+ENDCLASS.
