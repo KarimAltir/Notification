@@ -1,0 +1,76 @@
+managed implementation in class zbp_i_notification_k unique;
+strict;
+with draft;
+
+define behavior for ZR_NOTIFICATION_KTP alias Notification
+with unmanaged save
+draft table ZNotificationD
+//etag master Notification
+lock master total etag Notification
+late numbering
+authorization master ( global )
+{
+  field (readonly) Notification;
+
+  validation checkIsCompleted on save { create; update; }
+  create;
+  update;
+  delete;
+
+  draft action Edit;
+  draft action Activate;
+  draft action Discard;
+  draft action Resume;
+  draft determine action Prepare;
+
+// the rest of the mapping
+
+//  mapping for znotificationd control ZST_NOTIFICATION {
+//    Notification = Notification;
+//    Priority = Priority;
+//    Priority_Type = Priority_Type;
+//    Notification_Type = Notification_Type;
+//    Processing_Phase = Processing_Phase;
+//    CreatedBy = CreatedBy;
+//    Last_Changed = Last_Changed;
+//    Reported_By = Reported_By;
+//    Creation_Date = Creation_Date;
+//    Last_Change_Time = Last_Change_Time;
+//    Last_Change_Date = Last_Change_Date;
+//    Creation_Time = Creation_Time;
+//    Creation_Date_Time = Creation_Date_Time;
+//    Notification_Text = Notification_Text;
+//    Long_Text_Language = Long_Text_Language;
+//    Maintenance_Order = Maintenance_Order;
+//    Required_StartDate = Required_StartDate;
+//    Required_StartTime = Required_StartTime;
+//    Required_EndDate = Required_EndDate;
+//    Required_EndTime = Required_EndTime;
+//    CreationDate = CreationDate;
+//    CreationTime = CreationTime;
+//    ReferenceDate = ReferenceDate;
+//    HasLongText = HasLongText;
+//    NotifInternalID = NotifInternalID;
+//    Notification_Time_Zone = Notification_Time_Zone;
+//    ReferenceTime = ReferenceTime;
+//    CompletionDate = CompletionDate;
+//    CompletionTime = CompletionTime;
+//    CenterInternalID = CenterInternalID;
+//    CenterTypeCode = CenterTypeCode;
+//    WorkCenterPlant = WorkCenterPlant;
+//    Notification_Catalog = Notification_Catalog;
+//    Code = Code;
+//    CodeGroup = CodeGroup;
+//    Catalog_Profile = Catalog_Profile;
+//    Origin = Origin;
+//    Deleted = Deleted;
+////    Completed = Completed;
+//    Last_Change_Date_Time = Last_Change_Date_Time;
+//    Serial_Number = Serial_Number;
+//    Material = Material;
+//    Additional_Device_Data = Additional_Device_Data;
+//    Reference_Number = Reference_Number;
+//    Language = Language;
+//    DfsMaintNotificationObjectNmbr = DfsMaintNotificationObjectNmbr;
+//  }
+}
